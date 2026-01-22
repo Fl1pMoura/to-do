@@ -1,0 +1,26 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Task 1",
+      "description": "Description 1",
+      "tag": "morning",
+      "status": "not_started"
+    },
+    {
+      "id": 2,
+      "title": "Task 2",
+      "description": "Description 2",
+      "tag": "afternoon",
+      "status": "in_progress"
+    },
+
+    {
+      "id": 3,
+      "title": "Task 3",
+      "description": "Description 3",
+      "tag": "evening",
+      "status": "completed"
+    }
+  ]
+}

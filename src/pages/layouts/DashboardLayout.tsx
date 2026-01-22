@@ -3,7 +3,7 @@ import { Outlet } from "react-router"
 
 const DashboardLayout = () => {
   return (
-    <section className="flex h-screen gap-8">
+    <section className="flex h-screen">
       <Aside />
       <Outlet />
     </section>
