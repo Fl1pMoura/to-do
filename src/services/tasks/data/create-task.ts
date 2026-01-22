@@ -4,39 +4,44 @@ import { toast } from "sonner"
 import { v4 } from "uuid"
 import { tasksService } from ".."
 
-export function useCreateTask(task: Task) {
+export function useCreateTask() {
   return useMutation({
-    mutationFn: () => tasksService.create(task),
-    onMutate: async (_, context) => {
+    mutationFn: (task: Task) => tasksService.create(task),
+    onMutate: async (task, context) => {
+      // Cancela queries em andamento
       await context.client.cancelQueries({ queryKey: ["tasks"] })
-      const optimisticTask = {
-        id: v4(),
-        title: "Nova tarefa",
-        description: "Descrição da nova tarefa",
-        tag: "morning",
-        status: "not_started",
+
+      // Salva o estado anterior para rollback
+      const previousTasks = context.client.getQueryData<Task[]>(["tasks"])
+
+      // Cria tarefa otimista com os dados reais + ID temporário
+      const optimisticTask: Task = {
+        ...task,
+        id: task.id || v4(), // usa o ID existente ou gera um temporário
       }
-      // optimistic update
-      context.client.setQueryData(["tasks"], (old: Task[] = []) => [
+
+      // Optimistic update: adiciona a tarefa no cache
+      context.client.setQueryData<Task[]>(["tasks"], (old = []) => [
         ...old,
         optimisticTask,
       ])
-      return { optimisticTask }
+
+      return { optimisticTask, previousTasks }
     },
-    onSuccess: (result, _, onMutateResult, context) => {
-      // atualiza o cache
-      context.client.setQueryData(["tasks"], (old: Task[] = []) =>
+    onSuccess: (result, _variables, onMutateResult, context) => {
+      // Atualiza o cache com a resposta do servidor
+      context.client.setQueryData<Task[]>(["tasks"], (old = []) =>
         old.map((task) =>
-          task.id === onMutateResult.optimisticTask.id ? result : task
+          task.id === onMutateResult?.optimisticTask.id ? result : task
         )
       )
       toast.success("Tarefa criada com sucesso")
     },
-    onError: (_, __, onMutateResult, context) => {
-      // Reverte a mutação (rollback)
-      context.client.setQueryData(["tasks"], (old: Task[] = []) =>
-        old.filter((task) => task.id !== onMutateResult?.optimisticTask?.id)
-      )
+    onError: (_error, _variables, onMutateResult, context) => {
+      // Rollback: restaura o estado anterior
+      if (onMutateResult?.previousTasks) {
+        context.client.setQueryData(["tasks"], onMutateResult.previousTasks)
+      }
       toast.error("Erro ao criar tarefa")
     },
   })
