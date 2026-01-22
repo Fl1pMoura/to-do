@@ -1,9 +1,5 @@
-function App() {
-  return (
-    <div className="bg-red-500">
-      <h1>Hello World</h1>
-    </div>
-  )
-}
+import { Router } from "./Router/Router"
 
-export default App
+export function App() {
+  return <Router />
+}
