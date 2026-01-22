@@ -2,11 +2,9 @@ import { useQuery } from "@tanstack/react-query"
 import { tasksService } from ".."
 
 export function useGetTasks() {
-  const { data, isLoading, error } = useQuery({
+  return useQuery({
     queryKey: ["tasks"],
     queryFn: tasksService.getAll,
     initialData: [],
   })
-
-  return { data, isLoading, error }
 }
