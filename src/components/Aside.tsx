@@ -3,7 +3,7 @@ import { NavigationLink, NavigationWrapper } from "./NavigationLink"
 
 const Aside = () => {
   return (
-    <aside className="bg-card h-full min-w-72">
+    <aside className="bg-card fixed top-0 left-0 h-full min-w-72">
       <header className="space-y-4 px-8 py-6">
         <h1 className="text-primary text-xl font-semibold">Task Manager</h1>
         <p className="max-w-38 text-xs leading-snug">

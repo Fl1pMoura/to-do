@@ -1,4 +1,5 @@
 import DashboardLayout from "@/pages/layouts/DashboardLayout"
+import Tasks from "@/pages/tasks"
 import { BrowserRouter, Route, Routes } from "react-router"
 import Home from "../pages/home"
 
@@ -8,6 +9,7 @@ export function Router() {
       <Routes>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/tasks" element={<Tasks />} />
         </Route>
       </Routes>
     </BrowserRouter>

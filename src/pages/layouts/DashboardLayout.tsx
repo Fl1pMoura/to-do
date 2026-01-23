@@ -5,7 +5,9 @@ const DashboardLayout = () => {
   return (
     <section className="flex h-screen">
       <Aside />
-      <Outlet />
+      <main className="ml-72 w-full">
+        <Outlet />
+      </main>
     </section>
   )
 }
