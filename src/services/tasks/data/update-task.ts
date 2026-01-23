@@ -1,41 +1,44 @@
 import type { Task } from "@/entities/Task"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { v4 } from "uuid"
 import { tasksService } from ".."
 
-export function useUpdateTask(task: Task) {
-  return useMutation({
-    mutationFn: (task: Task) => tasksService.update(task),
+export function useUpdateTask() {
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: tasksService.update,
     onMutate: async (variables, context) => {
-      await context.client.cancelQueries({ queryKey: ["tasks", task.id] })
+      await context.client.cancelQueries({
+        queryKey: ["tasks", String(variables.id)],
+      })
 
-      const previousTasks = context.client.getQueryData<Task[]>(["tasks"])
-      const tmpId = v4()
-      // Optimistic update: adiciona a tarefa no cache
-      context.client.setQueryData<Task[]>(["tasks"], (old = []) => [
-        ...old.filter((task) => task.id !== variables.id),
-        { ...variables, id: tmpId },
+      const previousTask = context.client.getQueryData([
+        "tasks",
+        String(variables.id),
       ])
-      return { tmpId, previousTasks }
-    },
-    onSuccess: async (result, _, onMutateResult, context) => {
-      await context.client.cancelQueries({ queryKey: ["tasks", task.id] })
 
-      // atualiza o cache
-      context.client.setQueryData<Task[]>(["tasks"], (old = []) =>
-        old.map((task) => (task.id === onMutateResult?.tmpId ? result : task))
+      context.client.setQueryData<Task>(
+        ["tasks", String(variables.id)],
+        variables
       )
+      return { previousTask }
+    },
+    onSuccess: async () => {
       toast.success("Tarefa atualizada com sucesso")
     },
-    onError: async (_, __, onMutateResult, context) => {
-      await context.client.cancelQueries({ queryKey: ["tasks", task.id] })
+    onError: async (_, variables, onMutateResult, context) => {
+      await context.client.cancelQueries({
+        queryKey: ["tasks", String(variables.id)],
+      })
 
       // Reverte a mutação (rollback)
-      if (onMutateResult?.previousTasks) {
-        context.client.setQueryData(["tasks"], onMutateResult.previousTasks)
+      if (onMutateResult?.previousTask) {
+        context.client.setQueryData(
+          ["tasks", String(variables.id)],
+          onMutateResult.previousTask
+        )
       }
       toast.error("Erro ao atualizar tarefa")
     },
   })
+  return { updateTask: mutateAsync, isPending }
 }

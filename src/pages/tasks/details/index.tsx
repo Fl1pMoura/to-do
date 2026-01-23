@@ -1,13 +1,5 @@
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
   Form,
   FormControl,
   FormField,
@@ -23,57 +15,64 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { Task } from "@/entities/Task"
-import { useCreateTask } from "@/services/tasks/data/create-task"
+import { PagesHeader } from "@/pages/components/Header"
+import { PageSection, PageSectionContent } from "@/pages/components/PageSection"
+import { useDeleteTask } from "@/services/tasks/data/delete-task"
+import { useGetOneTask } from "@/services/tasks/data/get-one-task"
+import { useUpdateTask } from "@/services/tasks/data/update-task"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+
+import { Trash2Icon } from "lucide-react"
 import { useForm } from "react-hook-form"
+import { useNavigate, useParams } from "react-router"
 import { z } from "zod"
 
-const createTaskSchema = z.object({
+const updateTaskSchema = z.object({
   title: z.string().min(1, { message: "Título é obrigatório" }),
   description: z.string().min(1, { message: "Descrição é obrigatório" }),
   tag: z.enum(["morning", "afternoon", "evening"]),
 })
 
-const CreateTaskDialog = ({ children }: { children: React.ReactNode }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const { createTask } = useCreateTask()
-  const form = useForm<z.infer<typeof createTaskSchema>>({
-    resolver: zodResolver(createTaskSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      tag: "morning",
-    },
+interface DetailsParams extends Record<string, string | undefined> {
+  id: string
+}
+
+const TasksDetails = () => {
+  const { id } = useParams<DetailsParams>()
+  const navigate = useNavigate()
+  const { updateTask } = useUpdateTask()
+  const { deleteTask } = useDeleteTask()
+  const form = useForm<z.infer<typeof updateTaskSchema>>({
+    resolver: zodResolver(updateTaskSchema),
   })
-  const handleOpenChange = () => {
-    form.reset()
-    setIsOpen((prev) => !prev)
+
+  const { data } = useGetOneTask({
+    id: id ?? "",
+    reset: (data) => form.reset(data),
+  })
+
+  const onSubmit = async (values: z.infer<typeof updateTaskSchema>) => {
+    updateTask({ ...data, ...values })
   }
 
-  const onSubmit = async (values: z.infer<typeof createTaskSchema>) => {
-    const taskData = {
-      ...values,
-      status: "not_started",
+  const onDelete = async () => {
+    if (!id) {
+      return
     }
-    handleOpenChange()
-    await createTask(taskData as Task)
+    await deleteTask(id)
+    navigate("/tasks")
   }
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-84">
-        <DialogHeader className="flex flex-col items-center gap-1">
-          <DialogTitle className="text-xl font-semibold">
-            Nova tarefa
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground text-sm">
-            Insira as informações abaixo
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <PageSection>
+      <PagesHeader description="Início" title="Minhas Tarefas">
+        <Button variant="destructive" onClick={onDelete}>
+          <Trash2Icon className="size-4" />
+          Deletar tarefa
+        </Button>
+      </PagesHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <PageSectionContent className="space-y-6">
             <FormField
               control={form.control}
               name="title"
@@ -128,23 +127,15 @@ const CreateTaskDialog = ({ children }: { children: React.ReactNode }) => {
                 </FormItem>
               )}
             />
-            <div className="flex w-full gap-3">
-              <Button
-                type="button"
-                variant="secondary"
-                className="flex-1"
-                onClick={handleOpenChange}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" className="flex-1">
-                Salvar
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          </PageSectionContent>
+
+          <Button type="submit" className="mt-9 ml-auto block">
+            Salvar
+          </Button>
+        </form>
+      </Form>
+    </PageSection>
   )
 }
-export default CreateTaskDialog
+
+export default TasksDetails

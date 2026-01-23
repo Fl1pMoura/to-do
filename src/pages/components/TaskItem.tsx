@@ -30,11 +30,11 @@ export const TaskItem = ({ task }: { task: WithQueryStatus<Task> }) => {
         )}
       </div>
       <h4 className="mr-auto ml-2.5 text-sm">{task.title}</h4>
-      <Button variant="ghost" disabled={task.queryStatus === "pending"}>
-        <Link to={`/tasks/${task.id}`}>
+      <Link to={`/tasks/${task.id}`}>
+        <Button variant="ghost" disabled={task.queryStatus === "pending"}>
           <SquarePenIcon className="size-4" />
-        </Link>
-      </Button>
+        </Button>
+      </Link>
     </li>
   )
 }

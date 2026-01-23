@@ -1,11 +1,19 @@
+import type { Task } from "@/entities/Task"
 import { useQuery } from "@tanstack/react-query"
 import { tasksService } from ".."
 
-export function useGetOneTask(id: string) {
+interface useGetOneTaskProps {
+  id: string
+  reset(task: Task): void
+}
+
+export function useGetOneTask({ id, reset }: useGetOneTaskProps) {
   return useQuery({
     queryKey: ["tasks", id],
-    queryFn: () => tasksService.getOne(id),
-    enabled: !!id,
-    staleTime: 1000 * 60 * 5, // considera dados "frescos" por 5 minutos
+    queryFn: async () => {
+      const task = await tasksService.getOne(id)
+      reset(task)
+      return task
+    },
   })
 }

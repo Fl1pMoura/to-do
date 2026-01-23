@@ -12,7 +12,6 @@ export function useGetTasks() {
       const tasks = await tasksService.getAll()
       return tasks as TasksQueryData
     },
-    staleTime: 1000 * 60 * 5, // considera dados "frescos" por 5 minutos
   })
   return { data: data, isLoading }
 }
