@@ -20,12 +20,8 @@ export function useDeleteTask(id: string) {
 
       return { previousTasks }
     },
-    onSuccess: (_result, _variables, __, context) => {
-      // Invalidar queries para garantir sincronização com o servidor
-      context.client.invalidateQueries({ queryKey: ["tasks"] })
-      toast.success("Tarefa deletada com sucesso")
-    },
-    onError: (_error, _variables, onMutateResult, context) => {
+    onError: async (_error, _variables, onMutateResult, context) => {
+      await context.client.cancelQueries({ queryKey: ["tasks"] })
       // Rollback: restaura o estado anterior
       if (onMutateResult?.previousTasks) {
         context.client.setQueryData(["tasks"], onMutateResult.previousTasks)
