@@ -2,10 +2,26 @@ import { Button } from "@/components/ui/button"
 import type { Task } from "@/entities/Task"
 import type { WithQueryStatus } from "@/entities/utils"
 import { cn } from "@/lib/utils"
+import { useUpdateTask } from "@/services/tasks/data/update-task"
 import { CheckIcon, Loader2Icon, SquarePenIcon } from "lucide-react"
 import { Link } from "react-router"
 
 export const TaskItem = ({ task }: { task: WithQueryStatus<Task> }) => {
+  const { updateTask } = useUpdateTask()
+  const handleUpdateTaskStatus = async (task: Task) => {
+    if (task.status === "not_started") {
+      return (task.status = "in_progress")
+    }
+    if (task.status === "in_progress") {
+      return (task.status = "completed")
+    }
+    return (task.status = "not_started")
+  }
+
+  const handleUpdateTask = async () => {
+    await handleUpdateTaskStatus(task)
+    await updateTask(task)
+  }
   return (
     <li
       className={cn(
@@ -17,8 +33,9 @@ export const TaskItem = ({ task }: { task: WithQueryStatus<Task> }) => {
       )}
     >
       <div
+        onClick={handleUpdateTask}
         className={cn(
-          "flex size-6 items-center justify-center rounded-sm text-white",
+          "flex size-6 cursor-pointer items-center justify-center rounded-sm text-white",
           task.status === "not_started" && "bg-[#D9D9D9]",
           task.status === "in_progress" && "bg-chart-2",
           task.status === "completed" && "bg-primary"

@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button"
+import { useGetTasks } from "@/services/tasks/data/get-tasks"
 import { PlusIcon, Trash2Icon } from "lucide-react"
 import { PagesHeader } from "../components/Header"
-import { PageSection, PageSectionContent } from "../components/PageSection"
+import { PageSection } from "../components/PageSection"
+import TasksSummary from "./components/TasksSummary"
 
 const Home = () => {
+  const { data } = useGetTasks()
   return (
     <PageSection>
       <PagesHeader description="Início" title="Minhas Tarefas">
@@ -14,9 +17,7 @@ const Home = () => {
           Nova tarefa <PlusIcon className="size-4" />
         </Button>
       </PagesHeader>
-      <PageSectionContent>
-        <h1>Minhas Tarefas</h1>
-      </PageSectionContent>
+      <TasksSummary data={data ?? []} />
     </PageSection>
   )
 }
