@@ -15,12 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import type { Task } from "@/entities/Task"
 import { PagesHeader } from "@/pages/components/Header"
 import { PageSection, PageSectionContent } from "@/pages/components/PageSection"
 import { useDeleteTask } from "@/services/tasks/data/delete-task"
 import { useGetOneTask } from "@/services/tasks/data/get-one-task"
 import { useUpdateTask } from "@/services/tasks/data/update-task"
+import { queryKeys } from "@/services/tasks/query-keys"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Trash2Icon } from "lucide-react"
 import { useForm } from "react-hook-form"
@@ -40,10 +43,19 @@ interface DetailsParams extends Record<string, string | undefined> {
 const TasksDetails = () => {
   const { id } = useParams<DetailsParams>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const task = queryClient.getQueryData<Task>(
+    queryKeys.tasks.detail(String(id))
+  )
   const { updateTask } = useUpdateTask()
   const { deleteTask } = useDeleteTask()
   const form = useForm<z.infer<typeof updateTaskSchema>>({
     resolver: zodResolver(updateTaskSchema),
+    defaultValues: {
+      description: task?.description,
+      tag: task?.tag,
+      title: task?.title,
+    },
   })
 
   const { data } = useGetOneTask({

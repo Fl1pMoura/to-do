@@ -3,19 +3,22 @@ import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { tasksService } from ".."
+import { queryKeys } from "../query-keys"
 
 export function useDeleteTask() {
   const { mutateAsync, isPending } = useMutation({
     mutationFn: tasksService.delete,
     onMutate: async (variables, context) => {
       // Cancela queries em andamento
-      await context.client.cancelQueries({ queryKey: ["tasks"] })
+      await context.client.cancelQueries({ queryKey: queryKeys.tasks.all })
 
       // Salva o estado anterior para rollback
-      const previousTasks = context.client.getQueryData<Task[]>(["tasks"])
+      const previousTasks = context.client.getQueryData<Task[]>(
+        queryKeys.tasks.all
+      )
 
       // Optimistic update: remove a tarefa do cache
-      context.client.setQueryData<Task[]>(["tasks"], (old = []) =>
+      context.client.setQueryData<Task[]>(queryKeys.tasks.all, (old = []) =>
         old.filter((task) => task.id !== variables)
       )
 
@@ -25,10 +28,13 @@ export function useDeleteTask() {
       toast.success("Tarefa Deletada com sucesso!")
     },
     onError: async (_error, _variables, onMutateResult, context) => {
-      await context.client.cancelQueries({ queryKey: ["tasks"] })
+      await context.client.cancelQueries({ queryKey: queryKeys.tasks.all })
       // Rollback: restaura o estado anterior
       if (onMutateResult?.previousTasks) {
-        context.client.setQueryData(["tasks"], onMutateResult.previousTasks)
+        context.client.setQueryData(
+          queryKeys.tasks.all,
+          onMutateResult.previousTasks
+        )
       }
       toast.error("Erro ao deletar tarefa")
     },
