@@ -1,32 +1,11 @@
 {
   "tasks": [
     {
-      "id": 1,
-      "title": "Task 12",
-      "description": "Description 1",
-      "tag": "morning",
-      "status": "not_started"
-    },
-    {
       "title": "Noites",
       "description": "asd",
       "tag": "evening",
       "status": "not_started",
       "id": 3
-    },
-    {
-      "title": "Foda2",
-      "description": "pois eh",
-      "tag": "afternoon",
-      "status": "not_started",
-      "id": 6
-    },
-    {
-      "title": "teste",
-      "description": "asd",
-      "tag": "afternoon",
-      "status": "not_started",
-      "id": 7
     }
   ]
 }

@@ -19,7 +19,7 @@ export function useDeleteTask() {
 
       // Optimistic update: remove a tarefa do cache
       context.client.setQueryData<Task[]>(queryKeys.tasks.all, (old = []) =>
-        old.filter((task) => task.id !== variables)
+        old.filter((task) => task.id != variables)
       )
 
       return { previousTasks }
